@@ -1,0 +1,8 @@
+[package]
+
+name = "SDLNetRustLib"
+version = "0.0.1"
+authors = ["HiroLord <presto4132@comcast.net>"]
+
+[dependencies.sdl2_net]
+git = "https://github.com/Limvot/rust-sdl2_net"
