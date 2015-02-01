@@ -51,6 +51,24 @@ pub fn read_byte(net_data: &mut NetworkData) -> u8 {
     b
 }
 
+pub fn write_byte(net_data: &mut NetworkData, b: u8) {
+    net_data.write_buffer[net_data.buffer_index as usize] = b;
+    net_data.buffer_index += 1;
+}
+
+pub fn clear_buffer(net_data: &mut NetworkData) {
+    net_data.buffer_index = 0;
+}
+
+pub fn send_message(net_data: &mut NetworkData, socket: &sdl2_net::TCPsocket, clear: bool) -> bool{
+    let sent = sdl2_net::tcp_send(socket, net_data.write_buffer.as_mut_ptr(),
+    net_data.buffer_index) as u32;
+    let output: bool = if sent < net_data.buffer_index { false } else { true };
+    if clear { clear_buffer(net_data); }
+    output
+}
+
+
 fn shift_buffer(net_data: &mut NetworkData, shift: u32) {
     for i in 0..net_data.read_buffer_size {
         net_data.read_buffer[i as usize] = net_data.read_buffer[(i+shift) as usize];

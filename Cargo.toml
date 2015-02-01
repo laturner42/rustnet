@@ -1,8 +1,9 @@
 [package]
 
-name = "SDLNetRustLib"
+name = "rnet"
 version = "0.0.1"
-authors = ["HiroLord <presto4132@comcast.net>"]
+authors = ["HiroLord <prestonturner42@gmail.com>"]
+description = "SDL2_net wrapping library for easier use."
 
 [dependencies.sdl2_net]
 git = "https://github.com/Limvot/rust-sdl2_net"

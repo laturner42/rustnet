@@ -1,5 +1,5 @@
 [root]
-name = "SDLNetRustLib"
+name = "rnet"
 version = "0.0.1"
 dependencies = [
  "sdl2_net 0.0.1 (git+https://github.com/Limvot/rust-sdl2_net)",
@@ -35,7 +35,7 @@ dependencies = [
 [[package]]
 name = "sdl2_net"
 version = "0.0.1"
-source = "git+https://github.com/Limvot/rust-sdl2_net#9807c0610d5f53f76858b920209926cce84fe2b3"
+source = "git+https://github.com/Limvot/rust-sdl2_net#4ee042d5d29b6b489145478948c0198fff61bba0"
 dependencies = [
  "sdl2 0.0.21 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
