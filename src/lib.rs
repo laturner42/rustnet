@@ -16,7 +16,7 @@ pub struct NetworkData{
     is_server: bool,
 }
 
-pub fn rnet_read_socket<F: Fn(u8, u32) -> bool, J: Fn(&NetworkData) -> u32>(net: &mut NetworkData, socket: &sdl2_net::TCPsocket, can_handle: F, func: J) -> bool {
+pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(&NetworkData) -> u32>(net: &mut NetworkData, socket: &sdl2_net::TCPsocket, can_handle: F, func: J) -> bool {
     
     if sdl2_net::socket_ready(socket) {
         let rec_data = sdl2_net::tcp_recv(socket, net.c_buffer.as_mut_ptr(), MAX_BUFFER_SIZE as i32);
@@ -75,7 +75,7 @@ fn shift_buffer(net_data: &mut NetworkData, shift: u32) {
     }
 }
 
-pub fn rnet_check_for_new_client(net_data: &NetworkData) -> Option<sdl2_net::TCPsocket> {
+pub fn check_for_new_client(net_data: &NetworkData) -> Option<sdl2_net::TCPsocket> {
     if !net_data.is_server { return None }
     if sdl2_net::socket_ready(&(net_data.socket)) {
         let pos_new_socket = sdl2_net::tcp_accept(&(net_data.socket));
@@ -94,7 +94,7 @@ pub fn rnet_check_for_new_client(net_data: &NetworkData) -> Option<sdl2_net::TCP
     None
 }
 
-pub fn rnet_check_sockets(net_data: &NetworkData) -> bool {
+pub fn check_sockets(net_data: &NetworkData) -> bool {
     sdl2_net::check_sockets(&(net_data.socket_set), 0) > 0
 }
 
@@ -102,8 +102,8 @@ fn remove_socket(net_data: &NetworkData, socket: &sdl2_net::TCPsocket) {
     sdl2_net::del_socket(&(net_data.socket_set), &socket);
 }
 
-pub fn rnet_init_server(port: u16, num_clients: u32) -> Option<NetworkData> {
-    let possible_ss = rnet_initialize(num_clients as i32);
+pub fn init_server(port: u16, num_clients: u32) -> Option<NetworkData> {
+    let possible_ss = initialize(num_clients as i32);
     
     let socket_set: sdl2_net::SocketSet;
 
@@ -136,8 +136,8 @@ pub fn rnet_init_server(port: u16, num_clients: u32) -> Option<NetworkData> {
 
 }
 
-pub fn rnet_init_client(host: &str, port: u16) -> Option<NetworkData> {
-    let possible_ss = rnet_initialize(1);
+pub fn init_client(host: &str, port: u16) -> Option<NetworkData> {
+    let possible_ss = initialize(1);
 
     let socket_set: sdl2_net::SocketSet;
 
@@ -177,7 +177,7 @@ fn new_net_data(socket_set: sdl2_net::SocketSet, socket: sdl2_net::TCPsocket, is
                         is_server: is_server}
 }
 
-fn rnet_initialize(socket_set_size: i32) -> Option<sdl2_net::SocketSet> {
+fn initialize(socket_set_size: i32) -> Option<sdl2_net::SocketSet> {
     if !sdl2_net::init() {
         println!("SDLNet init failure.");
         None
