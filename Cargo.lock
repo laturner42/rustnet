@@ -1,5 +1,5 @@
 [root]
-name = "rnet"
+name = "rustnet"
 version = "0.0.1"
 dependencies = [
  "sdl2_net 0.0.1 (git+https://github.com/Limvot/rust-sdl2_net)",

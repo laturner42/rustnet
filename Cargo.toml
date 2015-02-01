@@ -1,6 +1,6 @@
 [package]
 
-name = "rnet"
+name = "rustnet"
 version = "0.0.1"
 authors = ["HiroLord <prestonturner42@gmail.com>"]
 description = "SDL2_net wrapping library for easier use."
