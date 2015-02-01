@@ -60,7 +60,11 @@ pub fn clear_buffer(net_data: &mut NetworkData) {
     net_data.buffer_index = 0;
 }
 
-pub fn send_message(net_data: &mut NetworkData, socket: &sdl2_net::TCPsocket, clear: bool) -> bool{
+pub fn send_message(net_data: &mut NetworkData, socket: &sdl2_net::TCPsocket) -> bool {
+    send_message_save(net_data, socket, true)
+}
+
+pub fn send_message_save(net_data: &mut NetworkData, socket: &sdl2_net::TCPsocket, clear: bool) -> bool{
     let sent = sdl2_net::tcp_send(socket, net_data.write_buffer.as_mut_ptr(),
     net_data.buffer_index) as u32;
     let output: bool = if sent < net_data.buffer_index { false } else { true };
@@ -73,6 +77,11 @@ fn shift_buffer(net_data: &mut NetworkData, shift: u32) {
     for i in 0..net_data.read_buffer_size {
         net_data.read_buffer[i as usize] = net_data.read_buffer[(i+shift) as usize];
     }
+}
+
+pub fn free_sockets(net_data: &mut NetworkData) {
+    sdl2_net::free_socket_set(&(net_data.socket_set));
+    sdl2_net::tcp_close(&(net_data.socket));
 }
 
 pub fn check_for_new_client(net_data: &NetworkData) -> Option<sdl2_net::TCPsocket> {
