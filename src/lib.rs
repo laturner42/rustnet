@@ -10,6 +10,27 @@ pub struct NetworkData{
 
     socket_set: sdl2_net::SocketSet,
     socket: sdl2_net::TCPsocket,
+
+    is_server: bool,
+}
+
+pub fn rnet_check_for_new_client(net_data: NetworkData) -> Option<sdl2_net::TCPsocket> {
+    if !net_data.is_server { return None }
+    if sdl2_net::socket_ready(&(net_data.socket)) {
+        let pos_new_socket = sdl2_net::tcp_accept(&(net_data.socket));
+
+        let new_socket: sdl2_net::TCPsocket;
+
+        match pos_new_socket {
+            Some(s) => new_socket = s,
+            None => return None,
+        }
+
+        sdl2_net::add_socket(&(net_data.socket_set), &(new_socket));
+
+        return Some(new_socket)
+    }
+    None
 }
 
 pub fn rnet_init_server(port: u16, num_clients: u32) -> Option<NetworkData> {
@@ -44,7 +65,8 @@ pub fn rnet_init_server(port: u16, num_clients: u32) -> Option<NetworkData> {
 
     Some(NetworkData{   write_buffer : [0; 512],    buffer_index : 0,
                         read_buffer : [0; 512],     read_buffer_size : 0,
-                        socket_set : socket_set,    socket : socket})
+                        socket_set : socket_set,    socket : socket,
+                        is_server : true})
 }
 
 pub fn rnet_init_client(host: &str, port: u16) -> Option<NetworkData> {
@@ -79,7 +101,12 @@ pub fn rnet_init_client(host: &str, port: u16) -> Option<NetworkData> {
 
     Some(NetworkData{   write_buffer : [0; 512],    buffer_index : 0,
                         read_buffer : [0; 512],     read_buffer_size : 0,
-                        socket_set : socket_set,    socket : socket})
+                        socket_set : socket_set,    socket : socket,
+                        is_server: false})
+}
+
+pub fn rnet_readsocket(socket: sdl2_net::TCPsocket, net_data: NetworkData) -> bool {
+    true
 }
 
 fn rnet_initialize(socket_set_size: i32) -> Option<sdl2_net::SocketSet> {
