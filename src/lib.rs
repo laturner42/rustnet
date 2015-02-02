@@ -11,10 +11,16 @@ pub struct NetworkData{
     c_buffer: Vec<u8>,
 
     socket_set: sdl2_net::SocketSet,
-    socket: sdl2_net::TCPsocket,
+    pub socket: sdl2_net::TCPsocket,
 
     is_server: bool,
 }
+
+/*
+pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(&NetworkData) -> u32>(net:&mut NetworkData, c: F, f: J) -> bool {
+    read_socket(net, &(net.socket), c, f)
+}
+*/
 
 pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(&NetworkData) -> u32>(net: &mut NetworkData, socket: &sdl2_net::TCPsocket, can_handle: F, func: J) -> bool {
     
