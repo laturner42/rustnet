@@ -16,14 +16,24 @@ pub struct NetworkData{
     is_server: bool,
 }
 
-/*
-pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(&NetworkData) -> u32>(net:&mut NetworkData, c: F, f: J) -> bool {
-    read_socket(net, &(net.socket), c, f)
+pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(&NetworkData) -> u32>(net:&mut NetworkData, socket: &sdl2_net::TCPsocket, c: F, f: J) -> bool {
+    read_option_socket(net, Some(socket), c, f)
 }
-*/
 
-pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(&NetworkData) -> u32>(net: &mut NetworkData, socket: &sdl2_net::TCPsocket, can_handle: F, func: J) -> bool {
-    
+pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(&NetworkData) -> u32>(net:&mut NetworkData, c: F, f: J) -> bool {
+    read_option_socket(net, None, c, f)
+}
+
+
+fn read_option_socket<F: Fn(u8, u32) -> bool, J: Fn(&NetworkData) -> u32>(net: &mut NetworkData, osocket: Option<&sdl2_net::TCPsocket>, can_handle: F, func: J) -> bool {
+
+    let socket: &sdl2_net::TCPsocket;
+
+    match osocket {
+        None => socket = &(net.socket),
+        Some(s) => socket = s,
+    }
+
     if sdl2_net::socket_ready(socket) {
         let rec_data = sdl2_net::tcp_recv(socket, net.c_buffer.as_mut_ptr(), MAX_BUFFER_SIZE as i32);
         if rec_data > 0 {
