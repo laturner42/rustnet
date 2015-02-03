@@ -54,6 +54,7 @@ fn read_option_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_ne
     if sdl2_net::socket_ready(socket) {
         unsafe {
             let rec_data = sdl2_net::tcp_recv(socket, c_buffer.as_mut_ptr(), MAX_BUFFER_SIZE as i32);
+            println!("Here's what happened: {}", rec_data);
             if rec_data > 0 {
                 for i in 0..rec_data {
                     read_buffer[(read_buffer_size as i32 + i) as usize] = c_buffer[i as usize]
