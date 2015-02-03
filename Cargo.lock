@@ -35,7 +35,7 @@ dependencies = [
 [[package]]
 name = "sdl2_net"
 version = "0.0.1"
-source = "git+https://github.com/Limvot/rust-sdl2_net#4ee042d5d29b6b489145478948c0198fff61bba0"
+source = "git+https://github.com/Limvot/rust-sdl2_net#e86ea1ae18a227cca0f1b72a97394e456f8d14fd"
 dependencies = [
  "sdl2 0.0.21 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
