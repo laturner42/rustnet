@@ -87,8 +87,9 @@ pub fn read_byte() -> u8 {
     let mut b: u8;
     unsafe {
         b = read_buffer[0];
+        shift_buffer(1);
+        read_buffer_size -= 1;
     }
-    shift_buffer(1);
     b
 }
 
