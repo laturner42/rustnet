@@ -34,12 +34,11 @@ pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_net::
     read_option_socket(socket, c, f)
 }
 
-/*
-pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(&mut NetworkData) -> u32>(net:&mut NetworkData, c: F, f: J) -> bool {
-    read_option_socket(net, None, c, f)
+pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(c: F, f: J) -> bool {
+    unsafe {
+        read_option_socket(&server_socket, c, f)
+    }
 }
-*/
-
 
 fn read_option_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_net::TCPsocket, can_handle: F, func: J) -> bool {
     
@@ -84,7 +83,7 @@ pub fn peek_byte() -> u8 {
 }
 
 pub fn read_byte() -> u8 {
-    let mut b: u8 = 0;
+    let mut b: u8;
     unsafe {
         b = read_buffer[0];
     }
@@ -110,10 +109,10 @@ pub fn send_message(socket: &sdl2_net::TCPsocket) -> bool {
 }
 
 pub fn send_message_save(socket: &sdl2_net::TCPsocket, clear: bool) -> bool{    
-    let output = false;
+    let output;
     unsafe {
         let sent = sdl2_net::tcp_send(socket, write_buffer.as_mut_ptr(), buffer_index) as u32;
-        let output: bool = if sent < buffer_index { false } else { true };
+        output = if sent < buffer_index { false } else { true };
         if clear { clear_buffer(); }
     }
     output
