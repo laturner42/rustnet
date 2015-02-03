@@ -104,6 +104,13 @@ pub fn clear_buffer() {
     }
 }
 
+pub fn send_ts_message() -> bool {
+    unsafe {
+        if is_server { return false }
+        send_message_save(&server_socket, true)
+    }
+}
+
 pub fn send_message(socket: &sdl2_net::TCPsocket) -> bool {
     send_message_save(socket, true)
 }
