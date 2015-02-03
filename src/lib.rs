@@ -30,7 +30,7 @@ pub struct NetworkData{
 }
 */
 
-pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(&mut [u8]) -> u32>(socket: &sdl2_net::TCPsocket, c: F, f: J) -> bool {
+pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_net::TCPsocket, c: F, f: J) -> bool {
     read_option_socket(socket, c, f)
 }
 
@@ -41,7 +41,7 @@ pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(&mut NetworkData) -> u32
 */
 
 
-fn read_option_socket<F: Fn(u8, u32) -> bool, J: Fn(&mut [u8]) -> u32>(socket: &sdl2_net::TCPsocket, can_handle: F, func: J) -> bool {
+fn read_option_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_net::TCPsocket, can_handle: F, func: J) -> bool {
     
     /*
     let socket: &sdl2_net::TCPsocket;
@@ -62,7 +62,7 @@ fn read_option_socket<F: Fn(u8, u32) -> bool, J: Fn(&mut [u8]) -> u32>(socket: &
                 read_buffer_size += rec_data as u32;
                 while read_buffer_size > 0 {
                     if can_handle(peek_byte(), read_buffer_size){
-                        func(&mut read_buffer);
+                        func(read_byte());
                     } else { break; }
                 }
                 return true
