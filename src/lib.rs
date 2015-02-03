@@ -76,15 +76,26 @@ pub fn clear_buffer(net_data: &mut NetworkData) {
     net_data.buffer_index = 0;
 }
 
-pub fn send_message(net_data: &mut NetworkData, socket: &sdl2_net::TCPsocket) -> bool {
-    send_message_save(net_data, socket, true)
+pub fn send_message(net_data: &mut NetworkData) -> bool {
+    send_message_save(net_data, None, true)
 }
 
-pub fn send_message_save(net_data: &mut NetworkData, socket: &sdl2_net::TCPsocket, clear: bool) -> bool{
+pub fn send_message_socket(net_data: &mut NetworkData, socket: &sdl2_net::TCPsocket) -> bool {
+    send_message_save(net_data, Some(socket), true)
+}
+
+pub fn send_message_save(net_data: &mut NetworkData, osocket: Option<&sdl2_net::TCPsocket>, clear: bool) -> bool{
+    let socket: &sdl2_net::TCPsocket;
+
+    match osocket {
+        None => socket = &(net_data.socket),
+        Some(s) => socket = s,
+    }
+    
     let sent = sdl2_net::tcp_send(socket, net_data.write_buffer.as_mut_ptr(),
     net_data.buffer_index) as u32;
     let output: bool = if sent < net_data.buffer_index { false } else { true };
-    if clear { clear_buffer(net_data); }
+    if clear { net_data.buffer_index = 0; } // equivalent of clear_bufer(), but rust...
     output
 }
 
