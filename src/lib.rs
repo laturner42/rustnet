@@ -30,6 +30,8 @@ pub struct NetworkData{
 }
 */
 
+pub use sdl2_net::{IPAddress, SocketSet, TCPsocket};
+
 pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_net::TCPsocket, c: F, f: J) -> bool {
     read_option_socket(socket, c, f)
 }
