@@ -1,36 +1,21 @@
+#![feature(core)]
+
 extern crate sdl2_net;
 
-static MAX_BUFFER_SIZE: u16 = 512;
+//static MAX_BUFFER_SIZE: u16 = 512;
 
 static mut write_buffer: [u8; 512] = [0; 512];
 static mut buffer_index: u32 = 0;
 static mut read_buffer: [u8; 512] = [0; 512];
 static mut read_buffer_size: u32 = 0;
 
-static mut c_buffer: [u8; 512] = [0; 512]; //Vec<u8> = Vec::with_capacity(MAX_BUFFER_SIZE as usize);
+//static mut c_buffer: [u8; 512] = [0; 512]; //Vec<u8> = Vec::with_capacity(MAX_BUFFER_SIZE as usize);
 
-static mut socket_set: sdl2_net::SocketSet = sdl2_net::SocketSet{ opaquePtr: &sdl2_net::_SDLNet_SocketSet };
-static mut server_socket: sdl2_net::TCPsocket = sdl2_net::TCPsocket{ opaquePtr: &sdl2_net::_TCPsocket };
+static mut socket_set: sdl2_net::SocketSet = sdl2_net::SocketSet { opaque_ptr: &sdl2_net::_SDLNet_SocketSet };
+static mut server_socket: sdl2_net::TCPsocket = sdl2_net::TCPsocket { opaque_ptr: &sdl2_net::_TCPsocket };
 
 static mut is_server: bool = false;
 
-/*
-pub struct NetworkData{
-    write_buffer: [u8; 512],
-    buffer_index: u32,
-    read_buffer: [u8; 512],
-    read_buffer_size: u32,
-
-    c_buffer: Vec<u8>,
-
-    socket_set: sdl2_net::SocketSet,
-    pub socket: sdl2_net::TCPsocket,
-
-    is_server: bool,
-}
-*/
-
-pub use sdl2_net::{IPAddress, SocketSet, TCPsocket};
 
 pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_net::TCPsocket, c: F, f: J) -> bool {
     read_option_socket(socket, c, f)
@@ -43,23 +28,16 @@ pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(c: F, f: J) 
 }
 
 fn read_option_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_net::TCPsocket, can_handle: F, func: J) -> bool {
-    
-    /*
-    let socket: &sdl2_net::TCPsocket;
-
-    match osocket {
-        None => socket = &(net.socket),
-        Some(s) => socket = s,
-    }
-    */
 
     if sdl2_net::socket_ready(socket) {
         unsafe {
-            let rec_data = sdl2_net::tcp_recv(socket, c_buffer.as_mut_ptr(), MAX_BUFFER_SIZE as i32);
+            let rec_data = sdl2_net::tcp_recv(socket, &mut read_buffer[(read_buffer_size as usize)..512]);
             if rec_data > 0 {
+                /*
                 for i in 0..rec_data {
                     read_buffer[(read_buffer_size as i32 + i) as usize] = c_buffer[i as usize]
                 }
+                */
                 read_buffer_size += rec_data as u32;
                 while read_buffer_size > 0 {
                     if can_handle(peek_byte(), read_buffer_size){
@@ -121,7 +99,7 @@ pub fn send_message(socket: &sdl2_net::TCPsocket) -> bool {
 pub fn send_message_save(socket: &sdl2_net::TCPsocket, clear: bool) -> bool{    
     let output;
     unsafe {
-        let sent = sdl2_net::tcp_send(socket, write_buffer.as_mut_ptr(), buffer_index) as u32;
+        let sent = sdl2_net::tcp_send(socket, &mut write_buffer[0..(buffer_index as usize)]) as u32;
         output = if sent < buffer_index { false } else { true };
         if clear { clear_buffer(); }
     }
@@ -261,16 +239,6 @@ pub fn init_client(host: &str, port: u16) -> bool {
 
     true
 }
-
-/*
-fn new_net_data(socket_set: sdl2_net::SocketSet, socket: sdl2_net::TCPsocket, is_server: bool) -> NetworkData {
-    NetworkData{   write_buffer : [0; 512],    buffer_index : 0,
-                        read_buffer : [0; 512],     read_buffer_size : 0,
-                        c_buffer : Vec::with_capacity(MAX_BUFFER_SIZE as usize),
-                        socket_set : socket_set,    socket : socket,
-                        is_server: is_server}
-}
-*/
 
 fn initialize(socket_set_size: i32) -> Option<sdl2_net::SocketSet> {
     if !sdl2_net::init() {
