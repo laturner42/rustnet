@@ -1,4 +1,4 @@
-#![feature(core)]
+//#![feature(core)]
 
 extern crate sdl2_net;
 
