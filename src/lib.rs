@@ -12,23 +12,23 @@ static mut read_buffer_size: u32 = 0;
 //static mut c_buffer: [u8; 512] = [0; 512]; //Vec<u8> = Vec::with_capacity(MAX_BUFFER_SIZE as usize);
 
 static mut socket_set: sdl2_net::SocketSet = sdl2_net::SocketSet { opaque_ptr: &sdl2_net::_SDLNet_SocketSet };
-static mut server_socket: sdl2_net::TCPsocket = sdl2_net::TCPsocket { opaque_ptr: &sdl2_net::_TCPsocket };
+static mut server_socket: TCPsocket = TCPsocket { opaque_ptr: &sdl2_net::_TCPsocket };
 
 static mut is_server: bool = false;
 
 pub use sdl2_net::TCPsocket;
 
-pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_net::TCPsocket, c: F, f: J) -> bool {
+pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(u8, &TCPsocket) -> u32>(socket: &TCPsocket, c: F, f: J) -> bool {
     read_option_socket(socket, c, f)
 }
 
-pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(c: F, f: J) -> bool {
+pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(u8, &TCPsocket) -> u32>(c: F, f: J) -> bool {
     unsafe {
         read_option_socket(&server_socket, c, f)
     }
 }
 
-fn read_option_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_net::TCPsocket, can_handle: F, func: J) -> bool {
+fn read_option_socket<Able: Fn(u8, u32) -> bool, Doit: Fn(u8, &TCPsocket) -> u32>(socket: &TCPsocket, can_handle: Able, func: Doit) -> bool {
 
     if sdl2_net::socket_ready(socket) {
         unsafe {
@@ -42,7 +42,7 @@ fn read_option_socket<F: Fn(u8, u32) -> bool, J: Fn(u8) -> u32>(socket: &sdl2_ne
                 read_buffer_size += rec_data as u32;
                 while read_buffer_size > 0 {
                     if can_handle(peek_byte(), read_buffer_size){
-                        func(read_byte());
+                        func(read_byte(), socket);
                     } else { break; }
                 }
                 return true
