@@ -1,4 +1,4 @@
-//#![feature(core)]
+#![feature(core)]
 
 extern crate sdl2_net;
 
@@ -77,6 +77,28 @@ pub fn write_byte(b: u8) {
     unsafe {
         write_buffer[buffer_index as usize] = b;
         buffer_index += 1;
+    }
+}
+
+pub fn read_float() -> f32 {
+    let mut f: f32;
+    unsafe{
+        let mut bytes: [u8; 4] = [0; 4];//read_buffer[0..4];
+        for i in range(0,bytes.len()) {
+            bytes[i as usize] = read_byte();
+        }
+        f = std::mem::transmute(bytes);
+    }
+    f
+}
+
+pub fn write_float(f: f32) {
+    unsafe {
+        let bytes: [u8; 4] = std::mem::transmute(f);
+        for byte in &bytes {
+            write_buffer[buffer_index as usize] = *byte;
+            buffer_index += 1;
+        }
     }
 }
 
