@@ -18,17 +18,17 @@ static mut is_server: bool = false;
 
 pub use sdl2_net::TCPsocket;
 
-pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(u8, &TCPsocket) -> u32>(socket: &TCPsocket, c: F, f: J) -> bool {
+pub fn read_socket<F: Fn(u8, u32) -> bool, J: Fn(u8, &TCPsocket) -> u32>(socket: &TCPsocket, c: &F, f: &J) -> bool {
     read_option_socket(socket, c, f)
 }
 
-pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(u8, &TCPsocket) -> u32>(c: F, f: J) -> bool {
+pub fn read_server_socket<F: Fn(u8, u32) -> bool, J: Fn(u8, &TCPsocket) -> u32>(c: &F, f: &J) -> bool {
     unsafe {
         read_option_socket(&server_socket, c, f)
     }
 }
 
-fn read_option_socket<Able: Fn(u8, u32) -> bool, Doit: Fn(u8, &TCPsocket) -> u32>(socket: &TCPsocket, can_handle: Able, func: Doit) -> bool {
+fn read_option_socket<Able:  Fn(u8, u32) -> bool, Doit:  Fn(u8, &TCPsocket) -> u32>(socket: &TCPsocket, can_handle: &Able, func: &Doit) -> bool {
 
     if sdl2_net::socket_ready(socket) {
         unsafe {
