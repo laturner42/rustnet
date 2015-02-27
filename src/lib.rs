@@ -44,6 +44,7 @@ impl SocketWrapper {
     pub fn read_socket(&mut self) -> bool{
         if sdl2_net::socket_ready(&self.socket) {
             let rec_data = self.read_data();
+            println!("Rec data {}", rec_data);
             if rec_data > 0 {
                 return true
             } else {
