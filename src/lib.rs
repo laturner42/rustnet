@@ -6,10 +6,6 @@ extern crate sdl2_net;
 
 static mut write_buffer: [u8; 512] = [0; 512];
 static mut buffer_index: u32 = 0;
-static mut read_buffer: [u8; 512] = [0; 512];
-static mut read_buffer_size: u32 = 0;
-
-//static mut c_buffer: [u8; 512] = [0; 512]; //Vec<u8> = Vec::with_capacity(MAX_BUFFER_SIZE as usize);
 
 static mut socket_set: sdl2_net::SocketSet = sdl2_net::SocketSet { opaque_ptr: &sdl2_net::_SDLNet_SocketSet };
 static mut server_socket: TCPsocket = TCPsocket { opaque_ptr: &sdl2_net::_TCPsocket };
@@ -18,80 +14,94 @@ static mut is_server: bool = false;
 
 pub use sdl2_net::TCPsocket;
 
-/*
-pub fn read_socket<F: Fn(u8) -> u32, J: Fn(u8, &TCPsocket)>(socket: &TCPsocket, c: &F, f: &J) -> bool {
-    read_option_socket(socket, c, f)
+pub struct SocketWrapper{
+    socket: TCPsocket,
+    read_buffer: [u8; 512],
+    read_buffer_size: u32,
 }
-*/
 
-pub fn read_server_socket<F: Fn(u8) -> u32, J: Fn(u8, &TCPsocket)>(c: &F, f: &J) -> bool {
-    unsafe {
-        read_socket(&server_socket, c, f)
+impl SocketWrapper {
+    pub fn socket(&self) -> &TCPsocket {
+        &self.socket
     }
-}
 
-pub fn read_socket<Able: Fn(u8) -> u32, Doit: Fn(u8, &TCPsocket)>(socket: &TCPsocket, msg_size: &Able, func: &Doit) -> bool {
+    pub fn tcp_socket(&self) -> &TCPsocket {
+        &self.socket
+    }
 
-    if sdl2_net::socket_ready(socket) {
-        unsafe {
-            let rec_data = sdl2_net::tcp_recv(socket, &mut read_buffer[(read_buffer_size as usize)..512]);
+    pub fn read_buffer(&mut self) -> &mut [u8; 512] {
+        &mut self.read_buffer
+    }
+
+    pub fn read_buffer_size(&self) -> u32 {
+        self.read_buffer_size
+    }
+
+    fn read_data(&mut self) -> i32 {
+        sdl2_net::tcp_recv(&self.socket, &mut self.read_buffer[(self.read_buffer_size as usize)..512])
+    }
+
+    pub fn read_socket(&mut self) -> bool{
+        if sdl2_net::socket_ready(&self.socket) {
+            let rec_data = self.read_data();
             if rec_data > 0 {
-                /*
-                for i in 0..rec_data {
-                    read_buffer[(read_buffer_size as i32 + i) as usize] = c_buffer[i as usize]
-                }
-                */
-                read_buffer_size += rec_data as u32;
-                while read_buffer_size > 0 {
-                    if msg_size(peek_byte()) < read_buffer_size {
-                        func(read_byte(), socket);
-                    } else { break; }
-                }
                 return true
             } else {
-                remove_socket(&socket);
-                sdl2_net::tcp_close(&socket);
+                remove_socket(&self.socket);
+                sdl2_net::tcp_close(&self.socket);
                 return false
             }
         }
+
+        true
     }
 
-    true
+    pub fn has_msg<Able: Fn(u8) -> u32>(&self, msg_size: &Able) -> bool{
+        msg_size(self.peek_byte()) < self.read_buffer_size
+    }
+
+    pub fn peek_byte(&self) -> u8 {
+        self.read_buffer[0]
+    }
+
+    pub fn read_byte(&mut self) -> u8 {
+        let mut b: u8;
+        b = self.read_buffer[0];
+        self.shift_buffer(1);
+        self.read_buffer_size -= 1;
+        b
+    }
+
+    pub fn read_float(&mut self) -> f32 {
+        let mut f: f32;
+        unsafe{
+            let mut bytes: [u8; 4] = [0; 4];//read_buffer[0..4];
+            for i in range(0, bytes.len()) {
+                bytes[i as usize] = self.read_byte();
+            }
+            f = std::mem::transmute(bytes);
+        }
+        f
+    }
+
+    fn shift_buffer(&mut self, shift: u32) {
+        for i in 0..self.read_buffer_size {
+            self.read_buffer[i as usize] = self.read_buffer[(i+shift) as usize];
+        }
+    }
+
 }
 
-pub fn peek_byte() -> u8 {
-    unsafe{
-        read_buffer[0]
-    }
+pub fn new_socket_wrapper(socket: TCPsocket) -> SocketWrapper{
+    SocketWrapper{socket: socket, read_buffer: [0; 512], read_buffer_size: 0}
 }
 
-pub fn read_byte() -> u8 {
-    let mut b: u8;
-    unsafe {
-        b = read_buffer[0];
-        shift_buffer(1);
-        read_buffer_size -= 1;
-    }
-    b
-}
 
 pub fn write_byte(b: u8) {
     unsafe {
         write_buffer[buffer_index as usize] = b;
         buffer_index += 1;
     }
-}
-
-pub fn read_float() -> f32 {
-    let mut f: f32;
-    unsafe{
-        let mut bytes: [u8; 4] = [0; 4];//read_buffer[0..4];
-        for i in range(0,bytes.len()) {
-            bytes[i as usize] = read_byte();
-        }
-        f = std::mem::transmute(bytes);
-    }
-    f
 }
 
 pub fn write_float(f: f32) {
@@ -110,34 +120,27 @@ pub fn clear_buffer() {
     }
 }
 
+/*
 pub fn send_ts_message() -> bool {
     unsafe {
         if is_server { return false }
         send_message_save(&server_socket, true)
     }
 }
+*/
 
-pub fn send_message(socket: &sdl2_net::TCPsocket) -> bool {
-    send_message_save(socket, true)
+pub fn send_message(wrapper: &SocketWrapper) -> bool {
+    send_message_save(wrapper, true)
 }
 
-pub fn send_message_save(socket: &sdl2_net::TCPsocket, clear: bool) -> bool{    
+pub fn send_message_save(wrapper: &SocketWrapper, clear: bool) -> bool{    
     let output;
     unsafe {
-        let sent = sdl2_net::tcp_send(socket, &mut write_buffer[0..(buffer_index as usize)]) as u32;
+        let sent = sdl2_net::tcp_send(wrapper.socket(), &mut write_buffer[0..(buffer_index as usize)]) as u32;
         output = if sent < buffer_index { false } else { true };
         if clear { clear_buffer(); }
     }
     output
-}
-
-
-fn shift_buffer(shift: u32) {
-    unsafe {
-        for i in 0..read_buffer_size {
-            read_buffer[i as usize] = read_buffer[(i+shift) as usize];
-        }
-    }
 }
 
 pub fn free_sockets() {
@@ -147,7 +150,7 @@ pub fn free_sockets() {
     }
 }
 
-pub fn check_for_new_client() -> Option<sdl2_net::TCPsocket> {
+pub fn check_for_new_client() -> Option<SocketWrapper> {
     unsafe {
         if !is_server { return None }
         if sdl2_net::socket_ready(&server_socket) {
@@ -162,7 +165,7 @@ pub fn check_for_new_client() -> Option<sdl2_net::TCPsocket> {
 
             sdl2_net::add_socket(&socket_set, &new_socket);
 
-            return Some(new_socket)
+            return Some(new_socket_wrapper(new_socket))
         }
     }
     None
@@ -222,13 +225,13 @@ pub fn init_server(port: u16, num_clients: u32) -> bool {
     true
 }
 
-pub fn init_client(host: &str, port: u16) -> bool {
+pub fn init_client(host: &str, port: u16) -> Option<SocketWrapper> {
     let possible_ss = initialize(1);
 
     let s_set: sdl2_net::SocketSet;
 
     match possible_ss{
-        None => return false,
+        None => return None,
         Some(ss) => s_set = ss,
     }
 
@@ -242,7 +245,7 @@ pub fn init_client(host: &str, port: u16) -> bool {
 
     match possible_ip {
         Some(i) => ip = i,
-        None => return false,
+        None => return None,
     }
 
     let possible_socket = sdl2_net::tcp_open(&mut ip);
@@ -251,18 +254,18 @@ pub fn init_client(host: &str, port: u16) -> bool {
 
     match possible_socket {
         Some(s) => socket = s,
-        None => return false,
+        None => return None,
     }
 
     unsafe {
-        server_socket = socket;
+        //server_socket = socket;
 
         sdl2_net::add_socket(&socket_set, &server_socket);
         
         is_server = false;
     }
 
-    true
+    Some(new_socket_wrapper(socket))
 }
 
 fn initialize(socket_set_size: i32) -> Option<sdl2_net::SocketSet> {
