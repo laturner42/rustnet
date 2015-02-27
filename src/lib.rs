@@ -261,7 +261,7 @@ pub fn init_client(host: &str, port: u16) -> Option<SocketWrapper> {
     unsafe {
         //server_socket = socket;
 
-        sdl2_net::add_socket(&socket_set, &server_socket);
+        sdl2_net::add_socket(&socket_set, &socket);
         
         is_server = false;
     }

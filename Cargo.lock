@@ -17,7 +17,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "log"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -26,7 +26,7 @@ version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -51,7 +51,7 @@ dependencies = [
 [[package]]
 name = "sdl2_net"
 version = "0.0.2"
-source = "git+https://github.com/Limvot/rust-sdl2_net#cc82ccda551cbe24a0b8dce8240a494c4654d7d6"
+source = "git+https://github.com/Limvot/rust-sdl2_net#d5e08a532142c92577e1c3b664c4bbd0690903ad"
 dependencies = [
  "sdl2 0.0.28 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
