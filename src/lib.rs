@@ -86,7 +86,7 @@ impl SocketWrapper {
     }
 
     fn shift_buffer(&mut self, shift: u32) {
-        for i in 0..self.read_buffer_size {
+        for i in 0..(self.read_buffer_size-1) {
             self.read_buffer[i as usize] = self.read_buffer[(i+shift) as usize];
         }
     }
