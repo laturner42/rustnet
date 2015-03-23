@@ -170,9 +170,9 @@ pub fn check_for_new_client() -> Option<SocketWrapper> {
     None
 }
 
-pub fn check_sockets() -> bool {
+pub fn check_sockets(timeout: u32) -> bool {
     unsafe {
-        sdl2_net::check_sockets(&socket_set, 0) > 0
+        sdl2_net::check_sockets(&socket_set, timeout) > 0
     }
 }
 
