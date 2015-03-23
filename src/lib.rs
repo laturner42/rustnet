@@ -1,5 +1,3 @@
-#![feature(core)]
-
 extern crate sdl2_net;
 
 //static MAX_BUFFER_SIZE: u16 = 512;
@@ -77,7 +75,7 @@ impl SocketWrapper {
         let mut f: f32;
         unsafe{
             let mut bytes: [u8; 4] = [0; 4];//read_buffer[0..4];
-            for i in range(0, bytes.len()) {
+            for i in 0..bytes.len() {
                 bytes[i as usize] = self.read_byte();
             }
             f = std::mem::transmute(bytes);
