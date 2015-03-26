@@ -76,7 +76,7 @@ impl SocketWrapper {
         unsafe{
             let mut bytes: [u8; 4] = [0; 4];//read_buffer[0..4];
             for i in 0..bytes.len() {
-                bytes[i as usize] = self.read_byte();
+                bytes[i] = self.read_byte();
             }
             f = std::mem::transmute(bytes);
         }
