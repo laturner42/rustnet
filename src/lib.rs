@@ -83,6 +83,30 @@ impl SocketWrapper {
         f
     }
 
+    pub fn read_int(&mut self) -> i32 {
+        let mut i: i32;
+        unsafe {
+            let mut bytes: [u8; 4] = [0; 4];
+            for j in 0..bytes.len() {
+                bytes[j] = self.read_byte();
+            }
+            i = std::mem::transmute(bytes);
+        }
+        i
+    }
+
+    pub fn read_uint(&mut self) -> u32 {
+        let mut u: u32;
+        unsafe {
+            let mut bytes: [u8; 4] = [0; 4];
+            for j in 0..bytes.len() {
+                bytes[j] = self.read_byte();
+            }
+            u = std::mem::transmute(bytes);
+        }
+        u
+    }
+
     fn shift_buffer(&mut self, shift: u32) {
         for i in 0..(self.read_buffer_size-1) {
             self.read_buffer[i as usize] = self.read_buffer[(i+shift) as usize];
@@ -106,6 +130,26 @@ pub fn write_byte(b: u8) {
 pub fn write_float(f: f32) {
     unsafe {
         let bytes: [u8; 4] = std::mem::transmute(f);
+        for byte in &bytes {
+            write_buffer[buffer_index as usize] = *byte;
+            buffer_index += 1;
+        }
+    }
+}
+
+pub fn write_int(i: i32) {
+    unsafe {
+        let bytes: [u8; 4] = std::mem::transmute(i);
+        for byte in &bytes {
+            write_buffer[buffer_index as usize] = *byte;
+            buffer_index += 1;
+        }
+    }
+}
+
+pub fn write_uint(u: u32) {
+    unsafe {
+        let bytes: [u8; 4] = std::mem::transmute(u);
         for byte in &bytes {
             write_buffer[buffer_index as usize] = *byte;
             buffer_index += 1;
