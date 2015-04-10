@@ -7,3 +7,6 @@ description = "SDL2_net wrapping library for easier use."
 
 [dependencies.sdl2_net]
 git = "https://github.com/Limvot/rust-sdl2_net"
+
+[dev_dependencies.sdl2]
+git = "https://github.com/AngryLawyer/rust-sdl2"
