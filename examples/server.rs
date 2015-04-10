@@ -50,7 +50,7 @@ fn main() {
                     // Send the new connection some test stuff.
                     rustnet::clear_buffer();
                     rustnet::write_byte(1);
-                    rustnet::write_float(43f32);
+                    rustnet::write_float(43.03f32);
                     rustnet::write_uint(290u32);
                     rustnet::write_int(-312i32);
                     rustnet::send_message(&socket);
@@ -94,7 +94,7 @@ fn main() {
                             println!("Incoming float: {}", connections[i].read_float());
                             println!("Incoming uint: {}", connections[i].read_uint());
                             println!("Incoming int: {}", connections[i].read_int());
-                        }
+                        },
                         _ => println!("Unknown message."),
                     }
                 }
